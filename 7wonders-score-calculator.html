@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7 Wonders Score Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-add {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-add:hover:not(:disabled) {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-remove {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-remove:hover:not(:disabled) {
+            background-color: #da190b;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .category-header {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        .total-row {
+            background-color: #ffe0b2;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        .total-row td:first-child {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .winner {
+            background-color: #ffd700 !important;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .player-count {
+            text-align: center;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* Remove spinner from number inputs */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ 7 Wonders Score Calculator</h1>
+        <p class="subtitle">Track scores across all ages and calculate the winner!</p>
+        
+        <div class="controls">
+            <button class="btn btn-add" id="addPlayerBtn" onclick="addPlayer()">+ Add Player</button>
+            <button class="btn btn-remove" id="removePlayerBtn" onclick="removePlayer()">- Remove Player</button>
+        </div>
+        
+        <p class="player-count">Players: <span id="playerCount">3</span> / 7</p>
+
+        <div class="table-container">
+            <table id="scoreTable">
+                <thead>
+                    <tr id="playerHeader">
+                        <th>Category</th>
+                    </tr>
+                </thead>
+                <tbody id="scoreBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            "Wonder board",
+            "Treasure",
+            "Military Conflicts",
+            "Blue",
+            "Yellow",
+            "Green",
+            "Purple"
+        ];
+
+        let playerCount = 3;
+        const maxPlayers = 7;
+
+        function initializePlayers() {
+            const headerRow = document.getElementById('playerHeader');
+            
+            // Add initial player headers
+            for (let i = 1; i <= playerCount; i++) {
+                const th = document.createElement('th');
+                th.innerHTML = `<input type="text" value="Player ${i}" onchange="updatePlayerName(${i-1}, this.value)">`;
+                headerRow.appendChild(th);
+            }
+
+            // Create category rows
+            const tbody = document.getElementById('scoreBody');
+            categories.forEach((category, catIndex) => {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.className = 'category-header';
+                td.textContent = category;
+                tr.appendChild(td);
+
+                for (let i = 0; i < playerCount; i++) {
+                    const scoreTd = document.createElement('td');
+                    scoreTd.innerHTML = `<input type="number" value="0" data-player="${i}" data-category="${catIndex}" oninput="calculateTotals()">`;
+                    tr.appendChild(scoreTd);
+                }
+
+                tbody.appendChild(tr);
+            });
+
+            // Add total row
+            addTotalRow();
+            updateButtonStates();
+        }
+
+        function addTotalRow() {
+            const tbody = document.getElementById('scoreBody');
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.id = 'totalRow';
+
+            const totalLabel = document.createElement('td');
+            totalLabel.textContent = 'TOTAL';
+            totalRow.appendChild(totalLabel);
+
+            for (let i = 0; i < playerCount; i++) {
+                const totalTd = document.createElement('td');
+                totalTd.id = `total-${i}`;
+                totalTd.textContent = '0';
+                totalRow.appendChild(totalTd);
+            }
+
+            tbody.appendChild(totalRow);
+        }
+
+        function updatePlayerName(index, name) {
+            // Player names are stored in the header inputs
+        }
+
+        function addPlayer() {
+            if (playerCount >= maxPlayers) return;
+
+            playerCount++;
+
+            // Add header
+            const headerRow = document.getElementById('playerHeader');
+            const th = document.createElement('th');
+            th.innerHTML = `<input type="text" value="Player ${playerCount}" onchange="updatePlayerName(${playerCount-1}, this.value)">`;
+            headerRow.appendChild(th);
+
+            // Add cells to each category row
+            const tbody = document.getElementById('scoreBody');
+            const rows = tbody.querySelectorAll('tr:not(#totalRow)');
+            
+            rows.forEach((row, catIndex) => {
+                const td = document.createElement('td');
+                td.innerHTML = `<input type="number" value="0" data-player="${playerCount-1}" data-category="${catIndex}" oninput="calculateTotals()">`;
+                row.appendChild(td);
+            });
+
+            // Add total cell
+            const totalRow = document.getElementById('totalRow');
+            const totalTd = document.createElement('td');
+            totalTd.id = `total-${playerCount-1}`;
+            totalTd.textContent = '0';
+            totalRow.appendChild(totalTd);
+
+            updatePlayerCount();
+            updateButtonStates();
+        }
+
+        function removePlayer() {
+            if (playerCount <= 1) return;
+
+            // Remove last header
+            const headerRow = document.getElementById('playerHeader');
+            headerRow.removeChild(headerRow.lastChild);
+
+            // Remove last cell from each row
+            const tbody = document.getElementById('scoreBody');
+            const rows = tbody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                row.removeChild(row.lastChild);
+            });
+
+            playerCount--;
+            updatePlayerCount();
+            updateButtonStates();
+            calculateTotals();
+        }
+
+        function updatePlayerCount() {
+            document.getElementById('playerCount').textContent = playerCount;
+        }
+
+        function updateButtonStates() {
+            document.getElementById('addPlayerBtn').disabled = playerCount >= maxPlayers;
+            document.getElementById('removePlayerBtn').disabled = playerCount <= 1;
+        }
+
+        function calculateTotals() {
+            const totals = new Array(playerCount).fill(0);
+
+            // Sum all scores for each player
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => {
+                const playerIndex = parseInt(input.dataset.player);
+                const value = parseInt(input.value) || 0;
+                totals[playerIndex] += value;
+            });
+
+            // Find max score for winner highlighting
+            const maxScore = Math.max(...totals);
+
+            // Update total cells
+            totals.forEach((total, index) => {
+                const totalCell = document.getElementById(`total-${index}`);
+                totalCell.textContent = total;
+                
+                // Highlight winner(s)
+                if (total === maxScore && maxScore > 0) {
+                    totalCell.classList.add('winner');
+                } else {
+                    totalCell.classList.remove('winner');
+                }
+            });
+        }
+
+        // Initialize the table on page load
+        initializePlayers();
+    </script>
+</body>
+</html>
+
