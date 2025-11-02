@@ -81,6 +81,16 @@
             transform: translateY(-2px);
         }
 
+        .btn-share {
+            background-color: #25D366;
+            color: white;
+        }
+
+        .btn-share:hover:not(:disabled) {
+            background-color: #20ba5a;
+            transform: translateY(-2px);
+        }
+
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -199,6 +209,7 @@
         <div class="controls">
             <button class="btn btn-add" id="addPlayerBtn" onclick="addPlayer()">+ Add Player</button>
             <button class="btn btn-remove" id="removePlayerBtn" onclick="removePlayer()">- Remove Player</button>
+            <button class="btn btn-share" id="shareBtn" onclick="shareOnWhatsApp()" disabled title="Loading image capture library...">📱 Share on WhatsApp</button>
         </div>
         
         <p class="player-count">Players: <span id="playerCount">3</span> / 7</p>
@@ -217,6 +228,28 @@
     </div>
 
     <script>
+        // Dynamically load html2canvas to avoid document.write() warnings
+        function loadHtml2Canvas() {
+            return new Promise((resolve, reject) => {
+                if (typeof html2canvas !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+                script.async = true;
+                script.onload = () => {
+                    window.html2canvasLoaded = true;
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject(new Error('Failed to load html2canvas'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
         const categories = [
             "🏛️ Wonder board",
             "💰 Treasure",
@@ -377,8 +410,100 @@
             });
         }
 
+        // Share on WhatsApp functionality
+        async function shareOnWhatsApp() {
+            const shareBtn = document.getElementById('shareBtn');
+            const originalText = shareBtn.textContent;
+            
+            try {
+                // Check if html2canvas is loaded
+                if (typeof html2canvas === 'undefined') {
+                    alert('Image capture library is still loading. Please wait a moment and try again.');
+                    return;
+                }
+                
+                // Disable button and show loading state
+                shareBtn.disabled = true;
+                shareBtn.textContent = '📸 Capturing...';
+                
+                // Capture the container as an image
+                const container = document.querySelector('.container');
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#ffffff',
+                    scale: 2, // Higher quality
+                    logging: false,
+                    useCORS: true
+                });
+                
+                // Convert canvas to blob
+                const blob = await new Promise(resolve => {
+                    canvas.toBlob(resolve, 'image/png');
+                });
+                
+                // Create a file from the blob
+                const file = new File([blob], '7wonders-scores.png', { type: 'image/png' });
+                
+                // Check if Web Share API is available (primarily mobile)
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    shareBtn.textContent = '📱 Sharing...';
+                    await navigator.share({
+                        files: [file],
+                        title: '7 Wonders Score Results',
+                        text: 'Check out our 7 Wonders game scores!'
+                    });
+                } else {
+                    // Fallback: Download the image (desktop)
+                    shareBtn.textContent = '💾 Downloading...';
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '7wonders-scores.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    // Show success message
+                    alert('Image downloaded! You can now upload it to WhatsApp.');
+                }
+                
+            } catch (error) {
+                console.error('Error sharing:', error);
+                alert('Failed to capture or share the image. Please try again.');
+            } finally {
+                // Reset button state
+                shareBtn.disabled = false;
+                shareBtn.textContent = originalText;
+            }
+        }
+
+        // Wait for html2canvas to load before enabling share button
+        function enableShareButton() {
+            const shareBtn = document.getElementById('shareBtn');
+            if (shareBtn && typeof html2canvas !== 'undefined') {
+                shareBtn.disabled = false;
+                shareBtn.title = 'Share scorecard on WhatsApp';
+                return true;
+            }
+            return false;
+        }
+
         // Initialize the table on page load
         initializePlayers();
+        
+        // Load html2canvas dynamically and enable share button when ready
+        loadHtml2Canvas()
+            .then(() => {
+                enableShareButton();
+            })
+            .catch((error) => {
+                console.error('Failed to load html2canvas:', error);
+                const shareBtn = document.getElementById('shareBtn');
+                if (shareBtn) {
+                    shareBtn.disabled = true;
+                    shareBtn.title = 'Failed to load image capture library. Please refresh the page.';
+                }
+            });
     </script>
 </body>
 </html>
