@@ -3,7 +3,8 @@
 A beautiful, responsive static webpage to track and calculate scores for the board game 7 Wonders.
 
 ## 🚀 Try it Now
-**Live Demo**: https://bit.ly/7wondersscores
+
+**Live Demo**: [https://bit.ly/hs7wonders](https://bit.ly/hs7wonders)
 
 ## Features
 
