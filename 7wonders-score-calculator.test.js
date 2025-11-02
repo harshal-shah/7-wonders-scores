@@ -65,6 +65,12 @@ describe('7 Wonders Score Calculator', () => {
       const shareBtn = document.getElementById('shareBtn');
       expect(shareBtn).toBeTruthy();
       expect(shareBtn.textContent).toContain('Share on WhatsApp');
+      
+      // Button should be enabled after html2canvas loads (mocked in our tests)
+      // In tests, we need to manually enable it since the load event doesn't fire the same way
+      if (shareBtn.disabled && typeof global.html2canvas !== 'undefined') {
+        shareBtn.disabled = false;
+      }
     });
   });
 
@@ -326,6 +332,14 @@ describe('7 Wonders Score Calculator', () => {
   });
 
   describe('WhatsApp Share Feature', () => {
+    beforeEach(() => {
+      // Ensure share button is enabled for tests
+      const shareBtn = document.getElementById('shareBtn');
+      if (shareBtn) {
+        shareBtn.disabled = false;
+      }
+    });
+
     test('should have share button in the DOM', () => {
       const shareBtn = document.getElementById('shareBtn');
       expect(shareBtn).toBeTruthy();
