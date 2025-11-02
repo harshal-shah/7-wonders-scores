@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7 Wonders Score Calculator</title>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" onload="window.html2canvasLoaded = true;"></script>
     <style>
         * {
             margin: 0;
@@ -229,6 +228,28 @@
     </div>
 
     <script>
+        // Dynamically load html2canvas to avoid document.write() warnings
+        function loadHtml2Canvas() {
+            return new Promise((resolve, reject) => {
+                if (typeof html2canvas !== 'undefined') {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+                script.async = true;
+                script.onload = () => {
+                    window.html2canvasLoaded = true;
+                    resolve();
+                };
+                script.onerror = () => {
+                    reject(new Error('Failed to load html2canvas'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
         const categories = [
             "🏛️ Wonder board",
             "💰 Treasure",
@@ -467,43 +488,22 @@
             return false;
         }
 
-        // Poll for html2canvas availability
-        function waitForHtml2Canvas(maxAttempts = 50, interval = 100) {
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (enableShareButton() || attempts >= maxAttempts) {
-                    clearInterval(checkInterval);
-                    if (attempts >= maxAttempts && !enableShareButton()) {
-                        const shareBtn = document.getElementById('shareBtn');
-                        if (shareBtn) {
-                            shareBtn.disabled = true;
-                            shareBtn.title = 'Failed to load image capture library. Please refresh the page.';
-                        }
-                    }
-                }
-            }, interval);
-        }
-
         // Initialize the table on page load
         initializePlayers();
         
-        // Try to enable immediately (in case script already loaded)
-        if (!enableShareButton()) {
-            // Wait for script to load - use multiple strategies
-            if (window.html2canvasLoaded && typeof html2canvas !== 'undefined') {
+        // Load html2canvas dynamically and enable share button when ready
+        loadHtml2Canvas()
+            .then(() => {
                 enableShareButton();
-            } else {
-                // Listen for window load event
-                if (document.readyState === 'complete') {
-                    waitForHtml2Canvas();
-                } else {
-                    window.addEventListener('load', () => {
-                        waitForHtml2Canvas();
-                    });
+            })
+            .catch((error) => {
+                console.error('Failed to load html2canvas:', error);
+                const shareBtn = document.getElementById('shareBtn');
+                if (shareBtn) {
+                    shareBtn.disabled = true;
+                    shareBtn.title = 'Failed to load image capture library. Please refresh the page.';
                 }
-            }
-        }
+            });
     </script>
 </body>
 </html>
