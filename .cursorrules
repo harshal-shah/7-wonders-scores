@@ -1,0 +1,198 @@
+# 7 Wonders Score Calculator - Cursor Rules
+
+## Project Overview
+A static HTML score calculator for the 7 Wonders board game with WhatsApp sharing capability.
+Built with vanilla JavaScript, no build tools required.
+
+## Code Style and Standards
+
+### HTML
+- Use semantic HTML5 elements
+- Single-file application (all CSS and JS inline in HTML)
+- CDN links for external libraries only (prefer lightweight libraries)
+- Maintain mobile-first responsive design
+- Use emojis for visual enhancement (🏛️, 💰, ⚔️, 🔵, 🟡, 🟢, 🟣, 📱)
+
+### CSS
+- Use inline `<style>` tags in the HTML head
+- Follow existing color scheme:
+  - Primary gradient: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
+  - WhatsApp green: `#25D366`
+  - Success green: `#4CAF50`
+  - Error red: `#f44336`
+  - Winner gold: `#ffd700`
+- Maintain consistent spacing (padding: 10-30px, margin: 10-25px)
+- Use `box-sizing: border-box` for all elements
+- Include hover effects with `transform: translateY(-2px)` for buttons
+- Disabled state: `opacity: 0.5`, `cursor: not-allowed`
+
+### JavaScript
+- Use vanilla JavaScript (no frameworks)
+- Functions should be defined in global scope for inline event handlers
+- Use `async/await` for asynchronous operations
+- Maintain existing function naming conventions:
+  - camelCase for functions: `addPlayer()`, `removePlayer()`, `calculateTotals()`
+  - Descriptive names that indicate action
+- Always include error handling with try-catch for async operations
+- Use template literals for string concatenation
+- Prefer `const` over `let`, avoid `var`
+
+### Component Structure
+- Keep controls section at top (add/remove/share buttons)
+- Table structure: Header row with player names, category rows, total row at bottom
+- Winner highlighting: Add `.winner` class, include animation
+
+### Event Handling
+- Use inline event handlers for simplicity: `onclick="functionName()"`
+- Input events for real-time updates: `oninput="calculateTotals()"`
+- Change events for data updates: `onchange="updatePlayerName()"`
+
+## Testing Standards
+
+### Test Framework
+- Use Jest with jsdom environment
+- Test file naming: `*.test.js`
+- Organize tests in `describe` blocks by feature area
+
+### Test Structure
+```javascript
+describe('Feature Name', () => {
+  beforeEach(() => {
+    // Load HTML and execute scripts
+    // Reset state
+  });
+  
+  afterEach(() => {
+    // Clean up
+    jest.clearAllMocks();
+  });
+  
+  test('should do something specific', () => {
+    // Arrange
+    // Act
+    // Assert
+  });
+});
+```
+
+### Test Coverage Requirements
+- All new features must have tests
+- Test happy paths and edge cases
+- Test error handling
+- Test UI state changes
+- Minimum coverage expectations:
+  - Player management: add, remove, min/max limits, button states
+  - Score calculation: positive, negative, empty inputs
+  - Winner highlighting: single winner, ties, no winner
+  - Integration: complex workflows
+
+### Mocking
+- Mock external libraries in `jest.setup.js`
+- Mock browser APIs not available in jsdom (alert, navigator.share, URL.createObjectURL)
+- Use `jest.fn()` for function mocks
+
+## Feature Implementation Guidelines
+
+### Adding New Features
+1. Plan the feature and discuss approach before implementing
+2. Update HTML structure if needed
+3. Add CSS styling following existing patterns
+4. Implement JavaScript functionality
+5. Write comprehensive tests
+6. Update README.md documentation
+7. Ensure CI/CD pipeline passes
+
+### Modifying Existing Features
+1. Check existing tests to understand current behavior
+2. Update implementation
+3. Update or add tests for new behavior
+4. Run full test suite to ensure no regressions
+5. Update documentation if behavior changes
+
+### Code Review Checklist
+- [ ] Follows existing code style
+- [ ] Includes comprehensive tests
+- [ ] All tests pass
+- [ ] Documentation updated
+- [ ] No console errors in browser
+- [ ] Works on mobile and desktop
+- [ ] Maintains existing functionality
+- [ ] Handles edge cases and errors
+
+## Git Workflow
+
+### Branch Naming
+- `feature/` - New features
+- `fix/` - Bug fixes
+- `docs/` - Documentation updates
+- `test/` - Test additions/improvements
+
+### Commit Messages
+Follow conventional commits:
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `test:` - Test changes
+- `docs:` - Documentation
+- `style:` - Code style changes
+- `refactor:` - Code refactoring
+
+Examples:
+- `feat: add WhatsApp sharing capability`
+- `test: add comprehensive test suite for score calculator`
+- `fix: handle empty score inputs correctly`
+
+### Pull Requests
+- Descriptive title summarizing the change
+- Include:
+  - What changed and why
+  - How to test
+  - Screenshots for UI changes
+  - Breaking changes (if any)
+- Link to related issues
+- Ensure CI passes before requesting review
+
+## Dependencies Management
+
+### Adding Dependencies
+- Prefer CDN links for browser-side libraries
+- Add dev dependencies to package.json only for testing/tooling
+- Document why dependency is needed
+- Use specific versions, not ranges (e.g., `1.4.1` not `^1.4.1`)
+
+### Current Dependencies
+- **html2canvas**: DOM to canvas conversion for image capture
+- **Jest**: Testing framework
+- **jsdom**: DOM implementation for testing
+
+## Performance Considerations
+- Keep the HTML file small (currently ~450 lines)
+- Minimize DOM manipulations
+- Use event delegation where possible
+- Avoid memory leaks (clean up event listeners, timers)
+- Test with maximum players (7) to ensure performance
+
+## Browser Compatibility
+- Target modern browsers (Chrome, Firefox, Safari, Edge - latest 2 versions)
+- Mobile browsers: iOS Safari, Chrome Mobile
+- Use standard Web APIs
+- Graceful degradation for missing features (e.g., Web Share API)
+
+## Accessibility (Future Consideration)
+- Add ARIA labels to dynamic content
+- Ensure keyboard navigation works
+- Maintain sufficient color contrast
+- Screen reader friendly table structure
+
+## Security
+- No user data stored or transmitted
+- All processing client-side
+- No external API calls
+- Safe DOM manipulation (no innerHTML with user input)
+
+## Documentation
+- Keep README.md up to date
+- Include usage examples
+- Document all npm scripts
+- Explain testing setup
+- Include browser compatibility notes
+

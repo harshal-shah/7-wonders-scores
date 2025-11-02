@@ -1,0 +1,30 @@
+{
+  "name": "7-wonders-score-calculator",
+  "version": "1.0.0",
+  "description": "Score calculator for 7 Wonders board game with WhatsApp sharing",
+  "main": "7wonders-score-calculator.html",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "7-wonders",
+    "board-game",
+    "score-calculator"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1"
+  },
+  "optionalDependencies": {
+    "canvas": "^2.11.2"
+  }
+}
+
