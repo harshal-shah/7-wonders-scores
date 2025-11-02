@@ -66,8 +66,8 @@ describe('7 Wonders Score Calculator', () => {
       expect(shareBtn).toBeTruthy();
       expect(shareBtn.textContent).toContain('Share on WhatsApp');
       
-      // Button should be enabled after html2canvas loads (mocked in our tests)
-      // In tests, we need to manually enable it since the load event doesn't fire the same way
+      // In tests, html2canvas is mocked globally, so we need to enable manually
+      // Simulate the enableShareButton function being called
       if (shareBtn.disabled && typeof global.html2canvas !== 'undefined') {
         shareBtn.disabled = false;
       }

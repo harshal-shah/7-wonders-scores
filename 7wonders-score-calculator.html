@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7 Wonders Score Calculator</title>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" onload="window.html2canvasLoaded = true;"></script>
     <style>
         * {
             margin: 0;
@@ -462,20 +462,47 @@
             if (shareBtn && typeof html2canvas !== 'undefined') {
                 shareBtn.disabled = false;
                 shareBtn.title = 'Share scorecard on WhatsApp';
+                return true;
             }
+            return false;
+        }
+
+        // Poll for html2canvas availability
+        function waitForHtml2Canvas(maxAttempts = 50, interval = 100) {
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (enableShareButton() || attempts >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    if (attempts >= maxAttempts && !enableShareButton()) {
+                        const shareBtn = document.getElementById('shareBtn');
+                        if (shareBtn) {
+                            shareBtn.disabled = true;
+                            shareBtn.title = 'Failed to load image capture library. Please refresh the page.';
+                        }
+                    }
+                }
+            }, interval);
         }
 
         // Initialize the table on page load
         initializePlayers();
         
-        // Enable share button when html2canvas is loaded
-        if (typeof html2canvas !== 'undefined') {
-            enableShareButton();
-        } else {
-            // Wait for script to load
-            window.addEventListener('load', () => {
-                setTimeout(enableShareButton, 100);
-            });
+        // Try to enable immediately (in case script already loaded)
+        if (!enableShareButton()) {
+            // Wait for script to load - use multiple strategies
+            if (window.html2canvasLoaded && typeof html2canvas !== 'undefined') {
+                enableShareButton();
+            } else {
+                // Listen for window load event
+                if (document.readyState === 'complete') {
+                    waitForHtml2Canvas();
+                } else {
+                    window.addEventListener('load', () => {
+                        waitForHtml2Canvas();
+                    });
+                }
+            }
         }
     </script>
 </body>
